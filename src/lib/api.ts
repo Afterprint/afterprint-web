@@ -1,0 +1,3 @@
+const base=process.env.NEXT_PUBLIC_API_BASE_URL;
+export async function api<T>(path:string,init:RequestInit={}):Promise<T>{if(!base)throw new Error('The live API is not configured. Explore the sample case, or set NEXT_PUBLIC_API_BASE_URL.');const res=await fetch(`${base.replace(/\/$/,'')}/v1${path}`,{...init,credentials:'include',headers:{'Content-Type':'application/json',...(init.method&&init.method!=='GET'?{'X-Afterprint-Request':'1'}:{}),...init.headers}});if(!res.ok){let message=`Request failed (${res.status})`;try{const body=await res.json();message=body.message||message}catch{}throw new Error(message)}if(res.status===204)return undefined as T;return res.json()}
+export const configured=Boolean(base);

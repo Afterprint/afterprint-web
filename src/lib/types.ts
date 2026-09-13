@@ -1,0 +1,10 @@
+export type Category='VERIFIED_FACT'|'CORROBORATED_CLAIM'|'INFERENCE'|'CONFLICT'|'UNKNOWN';
+export type Citation={evidenceId:string;versionId:string;span:string;page?:number;frameTimeMs?:number};
+export type Claim={id:string;text:string;category:Category;citations:Citation[]};
+export type Evidence={id:string;title:string;type:string;ref:string;status:string;source:string;versionId:string;sha256:string;size:number;mimeType:string;importedAt:string;text?:string;url?:string};
+export type Case={id:string;ref:string;title:string;status:string;classification:string;openedAt:string};
+export type TimelineEvent={id:string;time:string;description:string;precision:string;basis:string;category:Category;citations:Citation[]};
+export type Conflict={id:string;description:string;type:string;status:string;left:Claim;right:Claim};
+export type CustodyEvent={id:string;evidenceId:string;type:string;actor:string;occurredAt:string;reason:string;previousHash:string;eventHash:string};
+export type Reconstruction={id:string;status:string;claims:Claim[];reviewedIds:string[];reportHash?:string};
+export type Member={id:string;name:string;role:string};
