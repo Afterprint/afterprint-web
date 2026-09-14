@@ -4,6 +4,8 @@ import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {api} from '@/lib/api';
 import {Fingerprint,ArrowRight,ExternalLink,Shield,Check} from 'lucide-react';
+import {Buffer} from 'buffer';
+import * as freighterApi from '@stellar/freighter-api';
 
 type Step='idle'|'connecting'|'signing'|'verifying'|'done';
 
@@ -17,47 +19,35 @@ export default function Login(){
     setError('');
     setStep('connecting');
     try{
-      // Check Freighter is installed
-      const freighter=(window as any).freighterApi;
-      if(!freighter){
+      // Check Freighter is installed and connected (handles the extension's
+      // async injection internally, so this is safe to call right on load)
+      const connected=await freighterApi.isConnected();
+      if(connected.error||!connected.isConnected){
         setError('Freighter is not installed. Install it from freighter.app, then reload this page.');
         setStep('idle');
         return;
       }
-      // Check connection
-      const {isConnected}=await freighter.isConnected();
-      if(!isConnected){
-        setError('Freighter is not connected. Open the extension and unlock your wallet, then try again.');
+      // Request access — prompts the user to approve this site if needed,
+      // and returns the wallet address once approved
+      const access=await freighterApi.requestAccess();
+      if(access.error||!access.address){
+        setError('Could not access your wallet. Approve the connection request in Freighter and try again.');
         setStep('idle');
         return;
       }
-      // Get the wallet address
-      const addressResult=await (freighter.getAddress?.()??freighter.getPublicKey?.().then((pk:string)=>({address:pk})));
-      const walletAddress:string=addressResult?.address??addressResult;
-      if(!walletAddress){
-        setError('Could not read your wallet address. Check Freighter permissions.');
-        setStep('idle');
-        return;
-      }
+      const walletAddress=access.address;
       setPublicKey(walletAddress);
       // Request a challenge from the API
       const {challenge}=await api<{challenge:string}>('/auth/challenge',{method:'POST',body:JSON.stringify({publicKey:walletAddress})});
       // Ask Freighter to sign the challenge
       setStep('signing');
-      let signedMessage:string;
-      if(freighter.signMessage){
-        const result=await freighter.signMessage({message:challenge,address:walletAddress});
-        signedMessage=result?.signedMessage??result;
-      }else{
-        setError('This version of Freighter does not support message signing. Update to the latest version.');
-        setStep('idle');
-        return;
-      }
-      if(!signedMessage){
+      const signResult=await freighterApi.signMessage(challenge,{address:walletAddress});
+      if(signResult.error||!signResult.signedMessage){
         setError('Signing was cancelled or failed. Try again.');
         setStep('idle');
         return;
       }
+      const signedMessage=typeof signResult.signedMessage==='string'?signResult.signedMessage:Buffer.from(signResult.signedMessage).toString('base64');
       // Verify with the API
       setStep('verifying');
       await api<{id:string;name:string}>('/auth/verify',{method:'POST',body:JSON.stringify({publicKey:walletAddress,signature:signedMessage})});
