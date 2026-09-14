@@ -800,6 +800,7 @@ export default function Home(){
         </Link>
         <p>Evidence intelligence. Human judgment.</p>
         <span>© {new Date().getFullYear()} Afterprint. Authoritative build.</span>
+        <a href="https://cjay-1.gitbook.io/afterprint-docs/" target="_blank" rel="noopener noreferrer">Documentation <ChevronRight size={12}/></a>
         <a href="#principles">Safety invariants <ChevronRight size={12}/></a>
       </footer>
     </main>
