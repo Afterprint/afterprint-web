@@ -67,10 +67,28 @@ pnpm dev
 ```
 
 ```bash
+pnpm lint
 pnpm typecheck
+pnpm format:check
+pnpm test            # unit tests (node:test): the API proxy and the API client
 pnpm build
-pnpm exec playwright test tests/e2e/smoke.spec.ts   # needs a running instance
+pnpm test:e2e        # Playwright; needs a running instance on :3000 (see below)
 ```
+
+To run the end-to-end checks against a production build:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 pnpm build
+pnpm exec playwright install chromium
+pnpm exec next start -p 3000 &
+pnpm test:e2e
+```
+
+The API and AI health checks skip themselves unless `RENDER_API_URL` and `RENDER_AI_URL` point at deployed services. CI runs lint, format, typecheck, unit tests, the build, and the e2e suite on every pull request.
+
+## The `/backend` proxy
+
+The browser calls `/backend/v1/...` on this app's own origin, and [`src/lib/proxy.ts`](./src/lib/proxy.ts) forwards the request to `API_UPSTREAM_URL`. That keeps the session cookie first-party. The proxy only forwards `/v1` paths with no `.` or `..` segments, passes an allow-list of request headers (not `Authorization`), never follows redirects, returns every cookie the API sets, and marks all responses `no-store`. If the API is unreachable it answers `502` without exposing the error. These rules are covered by `tests/unit/proxy.test.ts`.
 
 ## Contributing
 
@@ -81,7 +99,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the workflow and coding standards, 
 | | |
 |---|---|
 | **GitHub** | [@helloworld1-star](https://github.com/helloworld1-star) |
-| **Email** | chijiokejoseph20242@gmaill.com |
+| **Email** | devt14985@gmail.com |
 
 ---
 

@@ -1,4 +1,4 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -6,10 +6,10 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          {key: 'X-Frame-Options', value: 'DENY'},
-          {key: 'X-Content-Type-Options', value: 'nosniff'},
-          {key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin'},
-          {key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()'},
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           {
             key: 'Content-Security-Policy',
             value: [
@@ -19,7 +19,8 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob:",
               "media-src 'self' blob:",
-              "connect-src 'self' " + (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'),
+              "connect-src 'self' " +
+                (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'),
               "frame-ancestors 'none'",
             ].join('; '),
           },
